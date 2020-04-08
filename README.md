@@ -15,7 +15,7 @@
 
 ```powershell
 # 스터디 모집 사이트 레포 클론
-> git clone http://rnd2.iljincns.co.kr:8888/390815/get-together-back.git
+> git clone https://github.com/ssr03/get-together-back.git
 
 # 메이븐 설치
 > mvn install
