@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mini.studyservice.api.tag.dao.TagDao">
+	<insert id="insertTages" parameterType="java.util.List">
+		insert ignore into tag(tag_name, type)
+		values
+		<foreach collection="list" item="item" separator="," >
+			(#{item.tag_name},#{item.type})
+		</foreach>
+	</insert>
+	<insert id="insertTagMappings" parameterType="java.util.List">
+		insert into tag_mapping(tag_id, board_id)
+		values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.tag_id},#{item.board_id})
+		</foreach>
+	</insert>
+	<select id="getTagIds" parameterType="java.util.List" resultType="Integer">
+		select tag_id from tag where tag_name in 
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item.tag_name}
+		</foreach>
+	</select>
+	<select id="getTags" parameterType="Integer" resultType="String">
+		select t.tag_name 
+		from tag t
+		join tag_mapping tm
+		on t.tag_id =tm.tag_id 
+		where t.type=1 and tm.board_id=#{board_id}
+	</select>
+	<select id="getTagsWithBoardId" parameterType="java.util.List" resultType="com.mini.studyservice.api.tag.dto.TagDto">
+		select t.tag_id, t.tag_name, tm.board_id 
+		from tag t
+		join tag_mapping tm
+		on t.tag_id =tm.tag_id 
+		where t.type=1 and tm.board_id in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		order by board_Id desc
+	</select>
+</mapper>

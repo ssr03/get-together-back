@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mini.studyservice.api.search.dao.StudyBoardSearchDao">
+	<select id="selectStudyBoardByLocation" parameterType="String" resultType="com.mini.studyservice.api.recruit.dto.StudyBoardDto">
+		select location,board_id, title, img_url, status, member_num,target_num,deadline, is_public, created_time
+		from study_board sb
+		where location like "%"#{search}"%"
+		order by sb.created_time desc, sb.board_id desc
+	</select>
+	<select id="selectStudyBoard" parameterType="String" resultType="com.mini.studyservice.api.recruit.dto.StudyBoardDto">
+		select distinct sb.board_id, title, content ,location, img_url, status, member_num,target_num,deadline,  is_public, sb.created_time
+		from tag_mapping tm
+		join study_board sb
+		on sb.board_id =tm.board_id 
+		join tag tg
+		on tg.tag_id =tm.tag_id 
+		where location like "%"#{search}"%" or sb.title like "%"#{search}"%" or sb.content like "%"#{search}"%" or tag_name like "%"#{search}"%"
+		order by sb.created_time desc, sb.board_id desc
+	</select>
+</mapper>

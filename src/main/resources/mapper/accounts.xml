@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mini.studyservice.core.security.account.dao.UserDao">
+	<select id="selectMyInfo" parameterType="String" resultType="com.mini.studyservice.core.security.account.dto.User">
+		select * from user where user_id=#{user_id}
+	</select>
+	<select id="findByLoginid" parameterType="String" resultType="com.mini.studyservice.core.security.account.dto.User">
+		select user_id, loginid , password, username, email
+		from user
+		where loginid =#{loginid}
+	</select>
+	<insert id="addUser" parameterType="com.mini.studyservice.core.security.account.dto.User"
+	useGeneratedKeys="true" keyProperty="user_id">
+		insert into user(loginid,password,username,email,registered_time) values(#{loginid},#{password},#{username},#{email},now())
+	</insert>
+	<insert id="insertNewUserRole" parameterType="java.util.HashMap">
+		INSERT INTO USER_ROLE (USER_ID, ROLE, CREATED_BY, CREATION_DATE, MODIFIED_BY, MODIFIED_DATE)
+		VALUES(#{user_id}, "super_user", 1, NOW(), 1, NOW())
+	</insert>
+</mapper>

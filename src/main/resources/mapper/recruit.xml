@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mini.studyservice.api.recruit.dao.RecruitDao">
+	<select id="selectAllStudyBoards" parameterType="java.util.Map" resultType="com.mini.studyservice.api.recruit.dto.StudyBoardDto">
+		select board_id, title, img_url, status, member_num,target_num,deadline, location, is_public, created_time
+		from study_board  
+		where is_public =true
+		order by created_time desc, board_id desc
+		limit #{length,jdbcType=INTEGER} offset #{start, jdbcType=INTEGER}
+	</select>
+	<select id="selectStudyBoardByStatus" parameterType="java.util.Map" resultType="com.mini.studyservice.api.recruit.dto.StudyBoardDto">
+		select board_id, title, img_url, status, member_num,target_num,deadline, location, is_public, created_time
+		from study_board  
+		where is_public =true and status = #{status}
+		order by created_time desc, board_id desc
+		limit #{length,jdbcType=INTEGER} offset #{start, jdbcType=INTEGER}
+	</select>
+	<select id="getStudyBoard" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyBoardDto">
+		select sb.board_id, title, img_url, u.username as writer, status, member_num ,target_num ,deadline, content, cost,location ,location_lat ,location_lng,created_time 
+		from study_board sb
+		join `user` u
+		on u.user_id =sb.writer_id
+		where is_public =true and sb.board_id = #{board_id}
+	</select>
+	<select id="selectStudyBoard" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyBoard">
+		select sb.board_id, title 
+		from study_board sb
+		where is_public =true and sb.board_id = #{board_id}
+	</select>
+	<insert id="insertStudyBoard" parameterType="com.mini.studyservice.api.recruit.dto.StudyBoard"
+	 useGeneratedKeys="true" keyProperty="board_id">
+		insert into study_board(title,img_url,writer_id,status,target_num,deadline,content,cost,location,location_lat,location_lng,is_public)
+		values(#{title},#{img_url},#{writer_id},1,#{target_num},#{deadline}, #{content},#{cost},#{location},#{location_lat},#{location_lng}, #{is_public})
+	</insert>
+	<insert id="insertStudyTime" parameterType="java.util.List">
+		insert into study_time(board_id, study_day, study_start_time, study_end_time) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.board_id},#{item.study_day},#{item.study_start_time},#{item.study_end_time})
+		</foreach>
+	</insert>
+	<insert id="insertStudyMember" parameterType="com.mini.studyservice.api.recruit.dto.StudyMember">
+		insert into study_member(user_id, board_id) values(#{user_id},#{board_id})
+	</insert>
+	<select id="selectStudyMember" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyMemberDto">
+		select sb.board_id, sb.writer_id,sb.target_num ,sb.member_num ,sm.user_id, sb.status as board_status
+		from study_board sb 
+		join study_member sm
+		on sb.board_id = sm.board_id 
+		where sb.board_id=#{board_id}
+	</select>
+	<update id="updateMemberNum" parameterType="java.util.HashMap">
+		update study_board set member_num=#{member_num} where board_id=#{board_id}
+	</update>
+	<update id="updateStatusTo2" parameterType="Integer">
+		update study_board set status = 2 where board_id=#{board_id}
+	</update>
+	<select id="selectStudyBoardsByTagId" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyBoardDto">
+		select sb.board_id, sb.title, sb.img_url ,sb.location , sb.target_num ,sb.member_num , sb.status , sb.deadline,sb.created_time 
+		from study_board sb 
+		join tag_mapping tm
+		on sb.board_id = tm.board_id 
+		where tm.tag_id = #{tag_id}
+		order by created_time desc, board_id desc
+	</select>
+	<select id="selectStudyBoardsByWriter" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyBoard">
+		select *
+		from study_board  
+		where writer_id=#{writer_id}
+		order by created_time desc, board_id desc
+	</select>
+	<select id="selectStudyBoardsByMember" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyBoard">
+		select sb.board_id,sb.writer_id ,sb.title , sb.status, sb.location , sb.deadline , sb.target_num , sb.member_num ,sb.created_time ,sm.user_id 
+		from study_board sb 
+		join study_member sm 
+		on sb.board_id = sm.board_id 
+		where sm.user_id=#{user_id}
+		order by status, sb.created_time
+	</select>
+	<select id="selectStudyMemberByBoard" parameterType="Integer" resultType="com.mini.studyservice.api.recruit.dto.StudyMemberUser">
+		select sb.board_id , sb.writer_id, sm.user_id, u.loginid ,u.email, u.username, sm.created_time as joined_date
+		from study_member sm 
+		join study_board sb
+		join user u
+		on sm.board_id =sb.board_id and u.user_id = sm.user_id 
+		where sm.board_id=#{board_id}
+	</select>
+	<select id="selectDeadlineStudyBoard" resultType="com.mini.studyservice.api.recruit.dto.StudyBoard">
+		select *  from study_board sb where deadline &lt; date_format(adddate(now(),1),'%Y-%m-%d') and status=1
+	</select>
+	<update id="autoUpdateStatusTo2" parameterType="java.util.List">
+		update study_board set status=2 where board_id in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	<select id="selectStudyTimeByStudyBoard" resultType="com.mini.studyservice.api.recruit.dto.StudyTimeDto" parameterType="Integer">
+		select * from study_time st where board_id =#{board_id}
+	</select>
+</mapper>
